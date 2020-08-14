@@ -11,7 +11,7 @@ module decode(
     output     [  4:0] rt,          
     output     [ 32:0] jbr_bus,     
     output             ID_over, 
-    output     [174:0] ID_EXE_bus,  
+    output     [176:0] ID_EXE_bus,  
     input              inst_addr_ok ,
 
     input              IF_over,     
@@ -243,7 +243,7 @@ module decode(
     wire inst_wdest_rd;  // rd???
     assign inst_wdest_rt = inst_imm_zero | inst_ADDIU | inst_SLTI
                          | inst_SLTIU | inst_load | inst_MFC0 
-                         | inst_ADDI;
+                         | inst_ADDI | inst_LWL | inst_LWR;
     assign inst_wdest_31 = inst_JAL | inst_BGEZAL | inst_BLTZAL;
     assign inst_wdest_rd = inst_ADDU | inst_SUBU | inst_SLT  | inst_SLTU
                          | inst_JALR | inst_AND  | inst_NOR  | inst_OR 
@@ -400,7 +400,13 @@ module decode(
     wire       break;
     wire       eret;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;  
+    wire [4:0] rf_wdest;
+    wire ls_bytes_L;
+    wire ls_bytes_R;
+    
+    assign ls_bytes_L = inst_LWL | inst_SWL;
+    assign ls_bytes_R = inst_LWR | inst_SWR;
+
     assign syscall  = inst_SYSCALL;
     assign break    = inst_BREAK;
     assign eret     = inst_ERET;
@@ -424,7 +430,7 @@ module decode(
                          mfhi,mflo,                           
                          mtc0,mfc0,cp0r_addr,syscall,break,add_sub,ri_ex,eret,    
                          rf_wen, rf_wdest,                    
-                         pc};                               
+                         pc, ls_bytes_L, ls_bytes_R};                               
 //-----{ID->EXE}end
 
 endmodule

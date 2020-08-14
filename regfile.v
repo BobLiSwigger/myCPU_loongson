@@ -6,6 +6,7 @@ module regfile(
     input      [4 :0] raddr1,
     input      [4 :0] raddr2,
     input      [4 :0] waddr,
+    input      [3 :0] rf_wbytes,
     input      [31:0] wdata,
     output     [31:0] rdata1,
     output     [31:0] rdata2,

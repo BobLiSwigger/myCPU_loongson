@@ -57,7 +57,10 @@ module exe(
     wire       eret;
     wire       ri_ex;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;  
+    wire [4:0] rf_wdest;
+    wire       ls_bytes_L;
+    wire       ls_bytes_R;
+    wire [3:0] rf_wbytes;
     //pc
     wire [31:0] pc;
     assign {inst_jbr,
@@ -83,7 +86,9 @@ module exe(
             eret,
             rf_wen,
             rf_wdest,
-            pc          } = ID_EXE_bus_r;
+            pc,
+            ls_bytes_L,
+            ls_bytes_R         } = ID_EXE_bus_r;
     assign EXE_multiply = multiply & EXE_valid;
 //-----{ID->EXE}end
 
@@ -219,7 +224,7 @@ module exe(
                           mfhi,mflo,                      
                           mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,ri_ex,eret,
                           EXE_wen,rf_wdest,                
-                          pc};                             //PC
+                          pc, rf_wbytes};                             //PC
 //-----{EXE->MEM??}end
 
 

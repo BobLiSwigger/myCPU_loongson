@@ -88,7 +88,8 @@ module mem(
     wire       break;
     wire       eret;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;  
+    wire [4:0] rf_wdest;
+    wire [3:0] rf_wbytes;
     wire       ov_ex;
     wire       ri_ex;
     //pc
@@ -112,7 +113,8 @@ module mem(
             eret,
             rf_wen,
             rf_wdest,
-            pc         } = EXE_MEM_bus_r;  
+            pc,
+            rf_wbytes         } = EXE_MEM_bus_r;  
 
     wire inst_load_t;  
     wire inst_store; 
@@ -259,7 +261,7 @@ module mem(
                          MEM_mfhi,MEM_mflo,                         
                          mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,adel_ex,ades_ex,ri_ex,eret, 
                          exe_result,
-                         pc};                               // PC
+                         pc, rf_wbytes};                               // PC
 
 
 endmodule
