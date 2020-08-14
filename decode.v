@@ -231,11 +231,11 @@ module decode(
     // ???????????
     wire inst_imm_zero; // 0??
     wire inst_imm_sign; // ?????
-    wire inst_offset_sign;
+    wire inst_offset_sign_not_align;
     assign inst_imm_zero = inst_ANDI  | inst_LUI  | inst_ORI | inst_XORI;
     assign inst_imm_sign = inst_ADDIU | inst_SLTI | inst_SLTIU
                          | inst_load | inst_store | inst_ADDI;
-    assign inst_offset_sign = inst_LWL | inst_LWR | inst_SWL | inst_SWR;
+    assign inst_offset_sign_not_align = inst_LWL | inst_LWR | inst_SWL | inst_SWR;
     
     // ????????
     wire inst_wdest_rt;  // ???rt???
@@ -360,7 +360,8 @@ module decode(
                           rs_value_related;
     assign alu_operand2 = inst_j_link ? 32'd8 :  
                           inst_imm_zero ? {16'd0, imm} :
-                          (inst_imm_sign | inst_offset_sign) ?  {{16{imm[15]}}, imm} : 
+                          inst_imm_sign ?  {{16{imm[15]}}, imm} : 
+                          inst_offset_sign_not_align ? {{16{offset[15]}}, offset[15:2], 2'd00} : 
                           rt_value_related;
     assign alu_control = {inst_add,        
                           inst_sub,
