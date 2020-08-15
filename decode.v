@@ -11,7 +11,7 @@ module decode(
     output     [  4:0] rt,          
     output     [ 32:0] jbr_bus,     
     output             ID_over, 
-    output     [176:0] ID_EXE_bus,  
+    output     [174:0] ID_EXE_bus,  
     input              inst_addr_ok ,
 
     input              IF_over,     
@@ -210,8 +210,7 @@ module decode(
     wire inst_sll, inst_srl, inst_sra,inst_lui;
     assign inst_add = inst_ADDU | inst_ADDIU | inst_load
                     | inst_store | inst_j_link | inst_ADD
-                    | inst_ADDI | inst_LWL | inst_LWR 
-                    | inst_SWL | inst_SWR;
+                    | inst_ADDI;
     assign inst_sub = inst_SUBU | inst_SUB;               
     assign inst_slt = inst_SLT | inst_SLTI;                
     assign inst_sltu= inst_SLTIU | inst_SLTU;             
@@ -231,11 +230,9 @@ module decode(
     // ???????????
     wire inst_imm_zero; // 0??
     wire inst_imm_sign; // ?????
-    wire inst_offset_sign_not_align;
     assign inst_imm_zero = inst_ANDI  | inst_LUI  | inst_ORI | inst_XORI;
     assign inst_imm_sign = inst_ADDIU | inst_SLTI | inst_SLTIU
                          | inst_load | inst_store | inst_ADDI;
-    assign inst_offset_sign_not_align = inst_LWL | inst_LWR | inst_SWL | inst_SWR;
     
     // ????????
     wire inst_wdest_rt;  // ???rt???
@@ -243,7 +240,7 @@ module decode(
     wire inst_wdest_rd;  // rd???
     assign inst_wdest_rt = inst_imm_zero | inst_ADDIU | inst_SLTI
                          | inst_SLTIU | inst_load | inst_MFC0 
-                         | inst_ADDI | inst_LWL | inst_LWR;
+                         | inst_ADDI;
     assign inst_wdest_31 = inst_JAL | inst_BGEZAL | inst_BLTZAL;
     assign inst_wdest_rd = inst_ADDU | inst_SUBU | inst_SLT  | inst_SLTU
                          | inst_JALR | inst_AND  | inst_NOR  | inst_OR 
@@ -361,7 +358,6 @@ module decode(
     assign alu_operand2 = inst_j_link ? 32'd8 :  
                           inst_imm_zero ? {16'd0, imm} :
                           inst_imm_sign ?  {{16{imm[15]}}, imm} : 
-                          inst_offset_sign_not_align ? {{16{offset[15]}}, offset} : 
                           rt_value_related;
     assign alu_control = {inst_add,        
                           inst_sub,
@@ -400,13 +396,7 @@ module decode(
     wire       break;
     wire       eret;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;
-    wire ls_bytes_L;
-    wire ls_bytes_R;
-    
-    assign ls_bytes_L = inst_LWL | inst_SWL;
-    assign ls_bytes_R = inst_LWR | inst_SWR;
-
+    wire [4:0] rf_wdest;  
     assign syscall  = inst_SYSCALL;
     assign break    = inst_BREAK;
     assign eret     = inst_ERET;
@@ -430,7 +420,7 @@ module decode(
                          mfhi,mflo,                           
                          mtc0,mfc0,cp0r_addr,syscall,break,add_sub,ri_ex,eret,    
                          rf_wen, rf_wdest,                    
-                         pc, ls_bytes_L, ls_bytes_R};                               
+                         pc};                               
 //-----{ID->EXE}end
 
 endmodule
