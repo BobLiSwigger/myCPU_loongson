@@ -16,7 +16,7 @@ module regfile(
     output [31:0]debug_wb_rf_wdata 
     );
     reg [31:0] rf[31:0];
-    assign debug_wb_rf_wen = {4{wen}};
+    assign debug_wb_rf_wen = rf_wbytes;
     assign debug_wb_rf_wdata = wdata;
     assign debug_wb_rf_wnum = waddr;
      
