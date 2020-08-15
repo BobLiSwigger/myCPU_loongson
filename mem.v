@@ -254,7 +254,15 @@ module mem(
                         (MEM_mflo & MEM_valid & !WB_lo_write) ? (LO_data & {32{MEM_valid}})    :
                         (MEM_mfhi & MEM_valid & WB_hi_write)  ? (WB_hi_data & {32{MEM_valid}}) :
                         (MEM_mfhi & MEM_valid & !WB_hi_write) ? (HI_data & {32{MEM_valid}})    :
-                        (mfc0 & MEM_valid )                   ? (cp0r_rdata&{32{MEM_valid}}):
+                        (mfc0 & MEM_valid )                   ? (cp0r_rdata&{32{MEM_valid}}) : 
+                        (ls_bytes_L | (rf_wbytes == 4'b1000)) ? {mem_result[7:0], 24'b0} & {32{MEM_valid}} : 
+                        (ls_bytes_L | (rf_wbytes == 4'b1100)) ? {mem_result[15:0], 16'b0} & {32{MEM_valid}} : 
+                        (ls_bytes_L | (rf_wbytes == 4'b1110)) ? {mem_result[23:0], 8'b0} & {32{MEM_valid}} : 
+                        (ls_bytes_L | (rf_wbytes == 4'b1111)) ? mem_result & {32{MEM_valid}} : 
+                        (ls_bytes_R | (rf_wbytes == 4'b1111)) ? mem_result & {32{MEM_valid}} : 
+                        (ls_bytes_R | (rf_wbytes == 4'b0111)) ? {8'b0, mem_result[31:8]} & {32{MEM_valid}} : 
+                        (ls_bytes_R | (rf_wbytes == 4'b0011)) ? {16'b0, mem_result[31:16]} & {32{MEM_valid}} : 
+                        (ls_bytes_R | (rf_wbytes == 4'b0001)) ? {24'b0, mem_result[31:24]} & {32{MEM_valid}} : 
                         mem_result & {32{MEM_valid}};
 	assign MEM_hi_data = mem_result;
     assign MEM_lo_data = lo_result;    
