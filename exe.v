@@ -241,7 +241,7 @@ module exe(
                           mfhi,mflo,                      
                           mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,ri_ex,eret,
                           EXE_wen,rf_wdest,                
-                          pc, rf_wbytes};                             //PC
+                          pc, ls_bytes_L, ls_bytes_R, rf_wbytes};                             //PC
 //-----{EXE->MEM??}end
 
 
