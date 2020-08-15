@@ -218,7 +218,7 @@ module exe(
                         mtc0     ? alu_operand2 : 
                         multiply ? product[63:32] : 
                         divide   ? product_div[31: 0] : 
-                        (ls_bytes_L | ls_bytes_R) ? {alu_result[31:2], 2'b00} : 
+                        (ls_bytes_L | ls_bytes_R) ? {alu_result[31:2], 2'b00} : //LWL & LWR load address
                         alu_result;
     assign EXE__result = (mflo & EXE_valid & MEM_lo_write)                ? (MEM_lo_data & {32{EXE_valid}}) :
                          (mflo & EXE_valid & !MEM_lo_write & WB_lo_write) ? (WB_lo_data & {32{EXE_valid}})  :
