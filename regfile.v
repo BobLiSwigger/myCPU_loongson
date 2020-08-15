@@ -29,7 +29,22 @@ module regfile(
     begin
         if (wen && waddr != 5'b0) 
         begin
-            rf[waddr] <= wdata;
+            if (rf_wbytes[3])
+            begin
+                rf[waddr][31:24] <= wdata[31:24];
+            end
+            if (rf_wbytes[2])
+            begin
+                rf[waddr][23:16] <= wdata[23:16];
+            end
+            if (rf_wbytes[1])
+            begin
+                rf[waddr][15:8] <= wdata[15:8];
+            end
+            if (rf_wbytes[0])
+            begin
+                rf[waddr][7:0] <= wdata[7:0];
+            end
         end
     end
     assign rdata1 = (raddr1 == 5'b0)          ? 32'b0 : 

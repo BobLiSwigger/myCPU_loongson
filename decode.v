@@ -361,7 +361,7 @@ module decode(
     assign alu_operand2 = inst_j_link ? 32'd8 :  
                           inst_imm_zero ? {16'd0, imm} :
                           inst_imm_sign ?  {{16{imm[15]}}, imm} : 
-                          inst_offset_sign_not_align ? {{16{offset[15]}}, offset[15:2], 2'd00} : 
+                          inst_offset_sign_not_align ? {{16{offset[15]}}, offset} : 
                           rt_value_related;
     assign alu_control = {inst_add,        
                           inst_sub,
