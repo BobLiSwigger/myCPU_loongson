@@ -61,6 +61,7 @@ module exe(
     wire       ls_bytes_L;
     wire       ls_bytes_R;
     wire [3:0] rf_wbytes;
+    wire [3:0] rf_wbytes_t;
     //pc
     wire [31:0] pc;
     assign {inst_jbr,
@@ -108,7 +109,16 @@ module exe(
     );
     assign ov_ex = ov & add_sub;
     assign n = alu_result[1:0];
-    
+    assign rf_wbytes_t = {(n == 2'b11), (n == 2'b10), (n == 2'b01), (n == 2'b00)};
+    assign rf_wbytes = ls_bytes_L ? {(rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[3])} : 
+                       ls_bytes_R ? {(rf_wbytes_t[0]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3])} : 
+                       4'b1111;
     
 //-----{ALU}end
 
