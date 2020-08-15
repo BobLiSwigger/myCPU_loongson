@@ -153,12 +153,12 @@ module sram_like_cpu(
 
     wire [ 63:0] IF_ID_bus;   // IF->ID
     wire [176:0] ID_EXE_bus;  // ID->EXE
-    wire [163:0] EXE_MEM_bus; // EXE->MEM
+    wire [165:0] EXE_MEM_bus; // EXE->MEM
     wire [160:0] MEM_WB_bus;  // MEM->WB
     
     reg [ 63:0] IF_ID_bus_r;
     reg [176:0] ID_EXE_bus_r;
-    reg [163:0] EXE_MEM_bus_r;
+    reg [165:0] EXE_MEM_bus_r;
     reg [160:0] MEM_WB_bus_r;
     
     always @(posedge clk)

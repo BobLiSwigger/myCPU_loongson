@@ -90,6 +90,8 @@ module mem(
     wire       rf_wen;    
     wire [4:0] rf_wdest;
     wire [3:0] rf_wbytes;
+    wire       ls_bytes_L;
+    wire       ls_bytes_R;
     wire       ov_ex;
     wire       ri_ex;
     //pc
@@ -114,6 +116,8 @@ module mem(
             rf_wen,
             rf_wdest,
             pc,
+            ls_bytes_L,
+            ls_bytes_R,
             rf_wbytes         } = EXE_MEM_bus_r;  
 
     wire inst_load_t;  
