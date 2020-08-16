@@ -6,8 +6,7 @@ module wb(
     input          WB_valid,    
     input  [156:0] MEM_WB_bus_r, 
     output         rf_wen,      
-    output [  4:0] rf_wdest,
-    output [  3:0] rf_wbytes,     
+    output [  4:0] rf_wdest,     
     output [ 31:0] rf_wdata,     
     output         WB_over,      
     input              inst_addr_ok ,
@@ -58,7 +57,6 @@ module wb(
     
     wire wen;
     wire [4:0] wdest;
-    wire [3:0] rf_wbytes;
     
     wire mfhi;
     wire mflo;
@@ -95,8 +93,7 @@ module wb(
             ri_ex,
             eret,
             dm_addr,
-            pc,
-            rf_wbytes} = MEM_WB_bus_r;
+            pc} = MEM_WB_bus_r;
 
     reg [31:0] hi;
     reg [31:0] lo;

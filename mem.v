@@ -88,10 +88,7 @@ module mem(
     wire       break;
     wire       eret;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;
-    wire [3:0] rf_wbytes;
-    wire       ls_bytes_L;
-    wire       ls_bytes_R;
+    wire [4:0] rf_wdest;  
     wire       ov_ex;
     wire       ri_ex;
     //pc
@@ -115,10 +112,7 @@ module mem(
             eret,
             rf_wen,
             rf_wdest,
-            pc,
-            ls_bytes_L,
-            ls_bytes_R,
-            rf_wbytes         } = EXE_MEM_bus_r;  
+            pc         } = EXE_MEM_bus_r;  
 
     wire inst_load_t;  
     wire inst_store; 
@@ -254,15 +248,7 @@ module mem(
                         (MEM_mflo & MEM_valid & !WB_lo_write) ? (LO_data & {32{MEM_valid}})    :
                         (MEM_mfhi & MEM_valid & WB_hi_write)  ? (WB_hi_data & {32{MEM_valid}}) :
                         (MEM_mfhi & MEM_valid & !WB_hi_write) ? (HI_data & {32{MEM_valid}})    :
-                        (mfc0 & MEM_valid )                   ? (cp0r_rdata&{32{MEM_valid}}) : 
-                        (ls_bytes_L | (rf_wbytes == 4'b1000)) ? {mem_result[7:0], 24'b0} & {32{MEM_valid}} : 
-                        (ls_bytes_L | (rf_wbytes == 4'b1100)) ? {mem_result[15:0], 16'b0} & {32{MEM_valid}} : 
-                        (ls_bytes_L | (rf_wbytes == 4'b1110)) ? {mem_result[23:0], 8'b0} & {32{MEM_valid}} : 
-                        (ls_bytes_L | (rf_wbytes == 4'b1111)) ? mem_result & {32{MEM_valid}} : 
-                        (ls_bytes_R | (rf_wbytes == 4'b1111)) ? mem_result & {32{MEM_valid}} : 
-                        (ls_bytes_R | (rf_wbytes == 4'b0111)) ? {8'b0, mem_result[31:8]} & {32{MEM_valid}} : 
-                        (ls_bytes_R | (rf_wbytes == 4'b0011)) ? {16'b0, mem_result[31:16]} & {32{MEM_valid}} : 
-                        (ls_bytes_R | (rf_wbytes == 4'b0001)) ? {24'b0, mem_result[31:24]} & {32{MEM_valid}} : 
+                        (mfc0 & MEM_valid )                   ? (cp0r_rdata&{32{MEM_valid}}):
                         mem_result & {32{MEM_valid}};
 	assign MEM_hi_data = mem_result;
     assign MEM_lo_data = lo_result;    
@@ -273,7 +259,7 @@ module mem(
                          MEM_mfhi,MEM_mflo,                         
                          mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,adel_ex,ades_ex,ri_ex,eret, 
                          exe_result,
-                         pc, rf_wbytes};                               // PC
+                         pc};                               // PC
 
 
 endmodule
