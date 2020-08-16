@@ -158,6 +158,8 @@ module sram_like_cpu(
     wire [165:0] EXE_MEM_bus; // EXE->MEM
     wire [160:0] MEM_WB_bus;  // MEM->WB
     
+    wire [176:0] ID_EXE_bus_before;
+    
     reg [ 63:0] IF_ID_bus_r;
     reg [177:0] ID_EXE_bus_r;
     reg [165:0] EXE_MEM_bus_r;
@@ -178,7 +180,7 @@ module sram_like_cpu(
         if(ID_over && EXE_allow_in)
         begin
             if (stop_1_clock) begin
-                ID_EXE_bus_r <= {ID_EXE_bus, 1'b1};
+                ID_EXE_bus_r <= {ID_EXE_bus_before, 1'b1};
             end
             else begin
                 ID_EXE_bus_r <= ID_EXE_bus;
@@ -308,6 +310,7 @@ module sram_like_cpu(
         .ID_EXE_bus_r(ID_EXE_bus_r),  // I, 167
         .EXE_over    (EXE_over    ),  // O, 1 
         .EXE_MEM_bus (EXE_MEM_bus ),  // O, 154
+        .ID_EXE_bus_before (ID_EXE_bus_before), 
         .stop_1_clock(stop_1_clock),  //stop one clock to send mem write request twice to support SWL and SWR
         
         //5?????

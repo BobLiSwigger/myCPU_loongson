@@ -5,7 +5,8 @@ module exe(
     input              EXE_valid,   
     input      [177:0] ID_EXE_bus_r,
     output             EXE_over,    
-    output     [165:0] EXE_MEM_bus, 
+    output     [165:0] EXE_MEM_bus,
+    output     [176:0] ID_EXE_bus_before, 
     output             stop_1_clock,
     
 
@@ -101,6 +102,7 @@ module exe(
             ls_bytes_L,
             ls_bytes_R,
             stop_1_clock_before         } = ID_EXE_bus_r;
+    assign ID_EXE_bus_before = ID_EXE_bus_r[176:0];
     assign EXE_multiply = multiply & EXE_valid;
     
     
