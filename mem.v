@@ -130,7 +130,7 @@ module mem(
  
     assign data_addr = exe_result & 32'H1fffffff;
     assign MEM_load = inst_load_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte)) & MEM_valid;
-    assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte));
+    assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (ls_dbyte & (ls_bytes_L | ls_bytes_R)) | (~ls_word & ~ls_dbyte));
  
     always @ (*)    
     begin
@@ -176,6 +176,7 @@ module mem(
                 data_wr <= 1'b1;                
             end
         end
+        //write req is as before
         else
         begin
             data_wr <= 1'b0;
@@ -185,13 +186,18 @@ module mem(
     
     always @ (*) 
     begin
-        case (data_addr[1:0])
-            2'b00   : data_wdata <= store_data;
-            2'b01   : data_wdata <= {16'd0, store_data[7:0], 8'd0};
-            2'b10   : data_wdata <= {store_data[15:0], 16'd0};
-            2'b11   : data_wdata <= {store_data[7:0], 24'd0};
-            default : data_wdata <= store_data;
-        endcase
+        if (ls_bytes_L | ls_bytes_R) begin
+            data_wdata <= store_data;
+        end
+        else begin
+            case (data_addr[1:0])
+                2'b00   : data_wdata <= store_data;
+                2'b01   : data_wdata <= {16'd0, store_data[7:0], 8'd0};
+                2'b10   : data_wdata <= {store_data[15:0], 16'd0};
+                2'b11   : data_wdata <= {store_data[7:0], 24'd0};
+                default : data_wdata <= store_data;
+            endcase
+        end
     end
     
 
