@@ -382,8 +382,8 @@ module decode(
     wire [4:0] mem_control;  //MEM
     wire [31:0] store_data;  //store
     assign l_unsign = inst_LBU | inst_LHU;
-    assign ls_dbyte = inst_LH | inst_LHU | inst_LH | inst_SH;
-    assign ls_word = inst_LW | inst_SW;
+    assign ls_dbyte = inst_LH | inst_LHU | inst_LH | inst_SH | inst_SWL | inst_SWR;
+    assign ls_word = inst_LW | inst_SW | inst_LWL | inst_LWR;
     assign mem_control = {inst_load,
                           inst_store,
                           ls_word,
