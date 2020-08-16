@@ -130,7 +130,7 @@ module mem(
  
     assign data_addr = exe_result & 32'H1fffffff;
     assign MEM_load = inst_load_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte)) & MEM_valid;
-    assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (ls_dbyte & (ls_bytes_L | ls_bytes_R)) | (~ls_word & ~ls_dbyte));
+    assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte));
  
     always @ (*)    
     begin
