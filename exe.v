@@ -46,7 +46,7 @@ module exe(
     wire [4:0] mem_control_ID;
     wire [4:0] mem_control;  
     wire [31:0] store_data;
-    wire [31:0] store_data_ID;  
+
                           
 
     wire mfhi;
@@ -85,7 +85,7 @@ module exe(
             alu_operand1,
             alu_operand2,
             mem_control_ID,
-            store_data_ID,
+            store_data,
             mfhi,
             mflo,
             mtc0,
