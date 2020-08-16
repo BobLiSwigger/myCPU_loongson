@@ -49,9 +49,22 @@ module mem(
 
     reg data_req_;
     wire inst_store;
-    assign data_req = (!MEM_valid)                 ?    1'b0    :
-                      (!MEM_load && !inst_store)   ?    1'b0    :
-                      data_req_;
+    wire data_req_t;
+    
+    wire dcache_wen;
+    wire data_in_cache;
+    wire data_in_cache_t;
+    wire [31:0] dcache_rdata;
+    wire [31:0] dcache_wdata;
+    dcache dcache_module(
+        clk,
+        data_addr,
+        dcache_wen,
+        data_addr,
+        dcache_wdata,
+        dcache_rdata,
+        data_in_cache_t
+    );
     
 
     always @(posedge clk)    
@@ -132,6 +145,17 @@ module mem(
     assign MEM_load = inst_load_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte)) & MEM_valid;
     assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte) | (ls_dbyte & (ls_bytes_L | ls_bytes_R)));
  
+    assign dcache_wen = ls_word & ((data_req & data_wr) | (data_req & ~data_wr & data_data_ok));
+    assign data_req_t = (!MEM_valid)                 ?    1'b0    :
+                      (!MEM_load && !inst_store)   ?    1'b0    :
+                      data_req_;
+    assign data_in_cache = ls_word ? (data_in_cache_t) : 1'b0;//cache is valid only if load word rather than byte
+    assign data_req = ~data_req_t ? 1'b0 : 
+                      data_wr ? 1'b1 : 
+                      data_in_cache ? 1'b0 : 
+                      1'b1;
+    assign dcache_wdata = data_wr ? data_wdata : data_rdata;
+ 
     always @ (*)    
     begin
         if (MEM_valid && inst_store && !cancel) 
@@ -202,13 +226,15 @@ module mem(
     
 
     wire [31:0] load_result;
-    assign load_result  =   ls_word ? data_rdata : 
-                            ls_dbyte & (data_addr[1:0] == 2'd0)   ?   {{16{~l_unsign & data_rdata[15]}}, data_rdata[15:0]}  :
-                            ls_dbyte & (data_addr[1:0] == 2'd2)   ?   {{16{~l_unsign & data_rdata[31]}}, data_rdata[31:16]} :
-                            data_addr[1:0] == 2'd0   ?   {{24{~l_unsign & data_rdata[7]}}, data_rdata[7:0]} :
-                            data_addr[1:0] == 2'd1   ?   {{24{~l_unsign & data_rdata[15]}}, data_rdata[15:8]} :
-                            data_addr[1:0] == 2'd2   ?   {{24{~l_unsign & data_rdata[23]}}, data_rdata[23:16]} :
-                            {{24{~l_unsign & data_rdata[31]}}, data_rdata[31:24]};
+    wire [31:0] load_result_t;
+    assign load_result_t = (data_req_t & ~data_req) ? dcache_rdata : data_rdata;
+    assign load_result  =   ls_word ? load_result_t : 
+                            ls_dbyte & (data_addr[1:0] == 2'd0)   ?   {{16{~l_unsign & load_result_t[15]}}, load_result_t[15:0]}  :
+                            ls_dbyte & (data_addr[1:0] == 2'd2)   ?   {{16{~l_unsign & load_result_t[31]}}, load_result_t[31:16]} :
+                            data_addr[1:0] == 2'd0   ?   {{24{~l_unsign & load_result_t[7]}}, load_result_t[7:0]} :
+                            data_addr[1:0] == 2'd1   ?   {{24{~l_unsign & load_result_t[15]}}, load_result_t[15:8]} :
+                            data_addr[1:0] == 2'd2   ?   {{24{~l_unsign & load_result_t[23]}}, load_result_t[23:16]} :
+                            {{24{~l_unsign & load_result_t[31]}}, load_result_t[31:24]};
                              
 
    
@@ -227,12 +253,14 @@ module mem(
    */
     assign MEM_valid_r = (!MEM_valid)                ?    1'b0    :
                          (!MEM_load && !inst_store)  ?    1'b0    :
+                         (~data_req && data_req_t)   ?    1'b1    :
                          data_data_ok                ?    1'b1    :
                          1'b0;
 
    //assign MEM_over = MEM_load ? MEM_valid_r : MEM_valid;
-    assign MEM_over = (!MEM_load && !inst_store)  ?  MEM_valid :
-                      data_data_ok                ?  1'b1      :
+    assign MEM_over = (!MEM_load && !inst_store)    ?  MEM_valid : 
+                      (~data_req && data_req_t)     ?  1'b1      :
+                      data_data_ok                  ?  1'b1      :
                       1'b0;
 
 
