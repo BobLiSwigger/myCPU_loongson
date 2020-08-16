@@ -57,7 +57,11 @@ module exe(
     wire       eret;
     wire       ri_ex;
     wire       rf_wen;    
-    wire [4:0] rf_wdest;  
+    wire [4:0] rf_wdest;
+    wire       ls_bytes_L;
+    wire       ls_bytes_R;
+    wire [3:0] rf_wbytes;
+    wire [3:0] rf_wbytes_t;
     //pc
     wire [31:0] pc;
     assign {inst_jbr,
@@ -83,14 +87,18 @@ module exe(
             eret,
             rf_wen,
             rf_wdest,
-            pc          } = ID_EXE_bus_r;
+            pc,
+            ls_bytes_L,
+            ls_bytes_R         } = ID_EXE_bus_r;
     assign EXE_multiply = multiply & EXE_valid;
+    
 //-----{ID->EXE}end
 
 //-----{ALU}begin
     wire [31:0] alu_result;
     wire        ov_ex;
     wire        ov;
+    wire [1 :0] n;
 
     alu alu_module(
         .alu_control  (alu_control ),  
@@ -100,6 +108,18 @@ module exe(
         .ov_ex        (ov)
     );
     assign ov_ex = ov & add_sub;
+    assign n = alu_result[1:0];
+    assign rf_wbytes_t = {(n == 2'b11), (n == 2'b10), (n == 2'b01), (n == 2'b00)};
+    assign rf_wbytes = ls_bytes_L ? {(rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[2] | rf_wbytes_t[3]), 
+                                     (rf_wbytes_t[3])} : 
+                       ls_bytes_R ? {(rf_wbytes_t[0]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2]), 
+                                     (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3])} : 
+                       4'b1111;
+    
 //-----{ALU}end
 
 //-----{mult}begin
@@ -197,7 +217,9 @@ module exe(
     assign exe_result = mthi     ? alu_operand1 :
                         mtc0     ? alu_operand2 : 
                         multiply ? product[63:32] : 
-                        divide   ? product_div[31: 0] : alu_result;
+                        divide   ? product_div[31: 0] : 
+                        (ls_bytes_L | ls_bytes_R) ? {alu_result[31:2], 2'b00} : //LWL & LWR load address
+                        alu_result;
     assign EXE__result = (mflo & EXE_valid & MEM_lo_write)                ? (MEM_lo_data & {32{EXE_valid}}) :
                          (mflo & EXE_valid & !MEM_lo_write & WB_lo_write) ? (WB_lo_data & {32{EXE_valid}})  :
                          (mflo & EXE_valid & !MEM_lo_write & !WB_lo_write)? (LO_data & {32{EXE_valid}})     :
@@ -219,7 +241,7 @@ module exe(
                           mfhi,mflo,                      
                           mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,ri_ex,eret,
                           EXE_wen,rf_wdest,                
-                          pc};                             //PC
+                          pc, ls_bytes_L, ls_bytes_R, rf_wbytes};                             //PC
 //-----{EXE->MEM??}end
 
 
