@@ -152,14 +152,14 @@ module sram_like_cpu(
     
 
     wire [ 63:0] IF_ID_bus;   // IF->ID
-    wire [174:0] ID_EXE_bus;  // ID->EXE
-    wire [159:0] EXE_MEM_bus; // EXE->MEM
-    wire [156:0] MEM_WB_bus;  // MEM->WB
+    wire [176:0] ID_EXE_bus;  // ID->EXE
+    wire [165:0] EXE_MEM_bus; // EXE->MEM
+    wire [160:0] MEM_WB_bus;  // MEM->WB
     
     reg [ 63:0] IF_ID_bus_r;
-    reg [174:0] ID_EXE_bus_r;
-    reg [159:0] EXE_MEM_bus_r;
-    reg [156:0] MEM_WB_bus_r;
+    reg [176:0] ID_EXE_bus_r;
+    reg [165:0] EXE_MEM_bus_r;
+    reg [160:0] MEM_WB_bus_r;
     
     always @(posedge clk)
     begin
@@ -230,6 +230,7 @@ module sram_like_cpu(
     
     wire        rf_wen;
     wire [ 4:0] rf_wdest;
+    wire [ 3:0] rf_wbytes;
     wire [31:0] rf_wdata;
    
     
@@ -374,6 +375,7 @@ module sram_like_cpu(
         .MEM_WB_bus_r (MEM_WB_bus_r ),  // I, 123
         .rf_wen       (rf_wen       ),  // O, 1
         .rf_wdest     (rf_wdest     ),  // O, 5
+        .rf_wbytes    (rf_wbytes    ),  // 0,4
         .rf_wdata     (rf_wdata     ),  // O, 32
         .WB_over      (WB_over      ),  // O, 1
         .inst_addr_ok (inst_addr_ok ),// I, 1
@@ -407,6 +409,7 @@ module sram_like_cpu(
         .raddr1             (rs               ),
         .raddr2             (rt               ),
         .waddr              (rf_wdest         ),
+        .rf_wbytes          (rf_wbytes        ),
         .wdata              (rf_wdata         ),
         .rdata1             (rs_value         ),
         .rdata2             (rt_value         ),
