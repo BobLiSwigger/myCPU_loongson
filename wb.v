@@ -4,7 +4,7 @@
                                  
 module wb(                      
     input          WB_valid,    
-    input  [156:0] MEM_WB_bus_r, 
+    input  [160:0] MEM_WB_bus_r, 
     output         rf_wen,      
     output [  4:0] rf_wdest,
     output [  3:0] rf_wbytes,     

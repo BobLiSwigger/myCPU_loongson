@@ -3,9 +3,9 @@
 
 module exe(                         
     input              EXE_valid,   
-    input      [174:0] ID_EXE_bus_r,
+    input      [176:0] ID_EXE_bus_r,
     output             EXE_over,    
-    output     [159:0] EXE_MEM_bus, 
+    output     [165:0] EXE_MEM_bus, 
     
 
     input              clk,         

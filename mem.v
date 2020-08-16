@@ -5,9 +5,9 @@ module mem(
     input              resetn,       
     input              cancel,
     input              MEM_valid,    
-    input      [159:0] EXE_MEM_bus_r,
+    input      [165:0] EXE_MEM_bus_r,
     output             MEM_over,     
-    output     [156:0] MEM_WB_bus,   
+    output     [160:0] MEM_WB_bus,   
       
 
     input              MEM_allow_in, 
@@ -48,7 +48,7 @@ module mem(
 );
 
     reg data_req_;
-    
+    wire inst_store;
     assign data_req = (!MEM_valid)                 ?    1'b0    :
                       (!MEM_load && !inst_store)   ?    1'b0    :
                       data_req_;
@@ -121,7 +121,7 @@ module mem(
             rf_wbytes         } = EXE_MEM_bus_r;  
 
     wire inst_load_t;  
-    wire inst_store; 
+     
     wire inst_store_t;
     wire ls_word;    
     wire ls_dbyte;
