@@ -11,7 +11,7 @@ module decode(
     output     [  4:0] rt,          
     output     [ 32:0] jbr_bus,     
     output             ID_over, 
-    output     [177:0] ID_EXE_bus,  
+    output     [176:0] ID_EXE_bus,  
     input              inst_addr_ok ,
 
     input              IF_over,     
@@ -430,7 +430,7 @@ module decode(
                          mfhi,mflo,                           
                          mtc0,mfc0,cp0r_addr,syscall,break,add_sub,ri_ex,eret,    
                          rf_wen, rf_wdest,                    
-                         pc, ls_bytes_L, ls_bytes_R, 1'b0};                               
+                         pc, ls_bytes_L, ls_bytes_R};                               
 //-----{ID->EXE}end
 
 endmodule
