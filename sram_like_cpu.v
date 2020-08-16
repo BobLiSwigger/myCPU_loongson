@@ -51,8 +51,6 @@ module sram_like_cpu(
 	output [31:0] debug_wb_rf_wdata    
     );
     
-    wire       stop_1_clock;
-    
     wire [31:0]IF_pc;
     wire [31:0]IF_inst;
     wire [31:0]ID_pc;
@@ -84,7 +82,7 @@ module sram_like_cpu(
    
     assign IF_allow_in  = (resetn & ID_allow_in) | cancel;
     assign ID_allow_in  = ~ID_valid  | (ID_over  & EXE_allow_in);
-    assign EXE_allow_in = ~EXE_valid | (EXE_over & MEM_allow_in & ~stop_1_clock);
+    assign EXE_allow_in = ~EXE_valid | (EXE_over & MEM_allow_in);
     assign MEM_allow_in = ~MEM_valid | (MEM_over & WB_allow_in );
     assign WB_allow_in  = ~WB_valid  | WB_over;
    
@@ -154,16 +152,14 @@ module sram_like_cpu(
     
 
     wire [ 63:0] IF_ID_bus;   // IF->ID
-    wire [177:0] ID_EXE_bus;  // ID->EXE
+    wire [176:0] ID_EXE_bus;  // ID->EXE
     wire [165:0] EXE_MEM_bus; // EXE->MEM
     wire [160:0] MEM_WB_bus;  // MEM->WB
     
     reg [ 63:0] IF_ID_bus_r;
-    reg [177:0] ID_EXE_bus_r;
+    reg [176:0] ID_EXE_bus_r;
     reg [165:0] EXE_MEM_bus_r;
     reg [160:0] MEM_WB_bus_r;
-    
-    
     
     always @(posedge clk)
     begin
@@ -177,12 +173,7 @@ module sram_like_cpu(
     begin
         if(ID_over && EXE_allow_in)
         begin
-            if (stop_1_clock) begin
-                ID_EXE_bus_r <= {ID_EXE_bus, 1'b1};
-            end
-            else begin
-                ID_EXE_bus_r <= ID_EXE_bus;
-            end
+            ID_EXE_bus_r <= ID_EXE_bus;
         end
     end
 
@@ -215,8 +206,6 @@ module sram_like_cpu(
     wire [31:0] MEM__result;
     wire        MEM_load;
     wire        MEM_valid_r;
-    
-    
     
     //hi&lo related
     wire [31:0] WB_hi_data;
@@ -308,7 +297,6 @@ module sram_like_cpu(
         .ID_EXE_bus_r(ID_EXE_bus_r),  // I, 167
         .EXE_over    (EXE_over    ),  // O, 1 
         .EXE_MEM_bus (EXE_MEM_bus ),  // O, 154
-        .stop_1_clock(stop_1_clock),  //stop one clock to send mem write request twice to support SWL and SWR
         
         //5?????
         .clk         (clk         ),  // I, 1
