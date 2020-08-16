@@ -3,15 +3,11 @@
 
 module exe(                         
     input              EXE_valid,   
-    input      [176:0] ID_EXE_bus_r,
+    input      [177:0] ID_EXE_bus_r,
     output             EXE_over,    
-<<<<<<< HEAD
     output     [165:0] EXE_MEM_bus,
     output     [176:0] ID_EXE_bus_before, 
     output             stop_1_clock,
-=======
-    output     [165:0] EXE_MEM_bus, 
->>>>>>> parent of 412cf83... Revert "Revert "SWL/SWR v0.0.1""
     
 
     input              clk,         
@@ -47,9 +43,10 @@ module exe(
     wire [31:0] alu_operand1;
     wire [31:0] alu_operand2;
 
-
+    wire [4:0] mem_control_ID;
     wire [4:0] mem_control;  
-    wire [31:0] store_data;  
+    wire [31:0] store_data;
+    wire [31:0] store_data_ID;  
                           
 
     wire mfhi;
@@ -68,6 +65,14 @@ module exe(
     wire       ls_bytes_R;
     wire [3:0] rf_wbytes;
     wire [3:0] rf_wbytes_t;
+    
+    wire       inst_load_ID;
+    wire       inst_store_ID;
+    wire       ls_word_ID;
+    wire       ls_dbyte_ID;
+    wire       l_unsign_ID;
+    
+    wire       stop_1_clock_before;
     //pc
     wire [31:0] pc;
     assign {inst_jbr,
@@ -79,8 +84,8 @@ module exe(
             alu_control,
             alu_operand1,
             alu_operand2,
-            mem_control,
-            store_data,
+            mem_control_ID,
+            store_data_ID,
             mfhi,
             mflo,
             mtc0,
@@ -95,14 +100,17 @@ module exe(
             rf_wdest,
             pc,
             ls_bytes_L,
-<<<<<<< HEAD
             ls_bytes_R,
             stop_1_clock_before         } = ID_EXE_bus_r;
     assign ID_EXE_bus_before = ID_EXE_bus_r[176:0];
-=======
-            ls_bytes_R         } = ID_EXE_bus_r;
->>>>>>> parent of 412cf83... Revert "Revert "SWL/SWR v0.0.1""
     assign EXE_multiply = multiply & EXE_valid;
+    
+    
+    assign inst_load_ID = mem_control_ID[4];
+    assign inst_store_ID = mem_control_ID[3];
+    assign ls_word_ID = mem_control_ID[2];
+    assign ls_dbyte_ID = mem_control_ID[1];
+    assign l_unsign_ID = mem_control_ID[0];
     
 //-----{ID->EXE}end
 
@@ -111,6 +119,9 @@ module exe(
     wire        ov_ex;
     wire        ov;
     wire [1 :0] n;
+    
+    wire        ls_word;
+    wire        ls_dbyte;
 
     alu alu_module(
         .alu_control  (alu_control ),  
@@ -131,6 +142,18 @@ module exe(
                                      (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2]), 
                                      (rf_wbytes_t[0] | rf_wbytes_t[1] | rf_wbytes_t[2] | rf_wbytes_t[3])} : 
                        4'b1111;
+    assign ls_word = (inst_store_ID && ls_bytes_L) ? rf_wbytes_t[3] : 
+                     (inst_store_ID && ls_bytes_R) ? rf_wbytes_t[0] : 
+                     ls_word_ID;
+    assign ls_dbyte = (inst_store_ID && ls_bytes_L) ? (rf_wbytes_t[2] | rf_wbytes_t[1] | rf_wbytes_t[0]) : 
+                      (inst_store_ID && ls_bytes_R) ? (rf_wbytes_t[3] | rf_wbytes_t[2] | rf_wbytes_t[1]) : 
+                      ls_dbyte_ID;
+    assign mem_control = {inst_load_ID, inst_store_ID, ls_word, ls_dbyte, l_unsign_ID};
+    
+    assign stop_1_clock = stop_1_clock_before ? 1'b0 : 
+                          (inst_store_ID && ls_bytes_L) ? (rf_wbytes_t[2]) : 
+                          (inst_store_ID && ls_bytes_R) ? (rf_wbytes_t[1]) : 
+                          1'b0;
     
 //-----{ALU}end
 
@@ -230,7 +253,13 @@ module exe(
                         mtc0     ? alu_operand2 : 
                         multiply ? product[63:32] : 
                         divide   ? product_div[31: 0] : 
-                        (ls_bytes_L | ls_bytes_R) ? {alu_result[31:2], 2'b00} : //LWL & LWR load address
+                        ((ls_bytes_L | ls_bytes_R) && inst_load_ID) ? {alu_result[31:2], 2'b00} : //LWL & LWR load address
+                        (ls_bytes_L & inst_store_ID & (!stop_1_clock) & (!stop_1_clock_before)) ? {alu_result[31:2], 2'b00} : 
+                        (ls_bytes_L & inst_store_ID & (stop_1_clock) & (!stop_1_clock_before)) ? {alu_result[31:2], 2'b00} : 
+                        (ls_bytes_L & inst_store_ID & (!stop_1_clock) & (stop_1_clock_before)) ? alu_result : 
+                        (ls_bytes_R & inst_store_ID & (!stop_1_clock) & (!stop_1_clock_before)) ? alu_result : 
+                        (ls_bytes_R & inst_store_ID & (stop_1_clock) & (!stop_1_clock_before)) ? alu_result : 
+                        (ls_bytes_R & inst_store_ID & (!stop_1_clock) & (stop_1_clock_before)) ? {alu_result[31:2], 2'b10} : 
                         alu_result;
     assign EXE__result = (mflo & EXE_valid & MEM_lo_write)                ? (MEM_lo_data & {32{EXE_valid}}) :
                          (mflo & EXE_valid & !MEM_lo_write & WB_lo_write) ? (WB_lo_data & {32{EXE_valid}})  :
