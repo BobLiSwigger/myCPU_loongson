@@ -58,7 +58,6 @@ module wb(
     
     wire wen;
     wire [4:0] wdest;
-    wire [3:0] rf_wbytes;
     
     wire mfhi;
     wire mflo;
