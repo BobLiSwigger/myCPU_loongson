@@ -151,11 +151,11 @@ module mem(
     assign MEM_load = inst_load_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte)) & MEM_valid;
     assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte) | (ls_dbyte & (ls_bytes_L | ls_bytes_R)));
  
-    assign dcache_wen = ls_word & ~ls_dbyte & ~inst_SB & ((data_req & data_wr) | (data_req & ~data_wr & data_data_ok));
+    assign dcache_wen = ~cancel & ls_word & ~ls_dbyte & ~inst_SB & ((data_req & data_wr) | (data_req & ~data_wr & data_data_ok));
     assign data_req_t = (!MEM_valid)                 ?    1'b0    :
                         (!MEM_load && !inst_store)   ?    1'b0    :
                         data_req_;
-    assign data_in_cache = (ls_word & ~ls_dbyte & ~inst_SB & MEM_valid) ? (data_in_cache_t) : 1'b0;//cache is valid only if load word rather than byte
+    assign data_in_cache = (ls_word & ~ls_dbyte & ~inst_SB & MEM_valid & ~cancel) ? (data_in_cache_t) : 1'b0;//cache is valid only if load word rather than byte
     assign data_req = ~data_req_t ? 1'b0 : 
                       data_wr ? 1'b1 : 
                       data_in_cache ? 1'b0 : 
@@ -235,7 +235,7 @@ module mem(
 
     wire [31:0] load_result;
     wire [31:0] load_result_t;
-    assign load_result_t = (data_req_t & ~data_req) ? dcache_rdata : data_rdata;
+    assign load_result_t = (data_req_t & ~data_req & ls_word & ~inst_SB) ? dcache_rdata : data_rdata;
     assign load_result  =   ls_word ? load_result_t : 
                             ls_dbyte & (data_addr[1:0] == 2'd0)   ?   {{16{~l_unsign & load_result_t[15]}}, load_result_t[15:0]}  :
                             ls_dbyte & (data_addr[1:0] == 2'd2)   ?   {{16{~l_unsign & load_result_t[31]}}, load_result_t[31:16]} :
