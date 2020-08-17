@@ -5,7 +5,7 @@ module mem(
     input              resetn,       
     input              cancel,
     input              MEM_valid,    
-    input      [165:0] EXE_MEM_bus_r,
+    input      [166:0] EXE_MEM_bus_r,
     output             MEM_over,     
     output     [160:0] MEM_WB_bus,   
       
@@ -56,11 +56,15 @@ module mem(
     wire data_in_cache_t;
     wire [31:0] dcache_rdata;
     wire [31:0] dcache_wdata;
+    wire dcache_clear;
+    wire [31:0] dcache_waddr;
     dcache dcache_module(
         clk,
-        data_addr,
+        resetn,
+        {data_addr[31:2], 2'b0},
+        dcache_clear,
         dcache_wen,
-        data_addr,
+        dcache_waddr,
         dcache_wdata,
         dcache_rdata,
         data_in_cache_t
@@ -108,7 +112,8 @@ module mem(
     wire       ov_ex;
     wire       ri_ex;
     //pc
-    wire [31:0] pc;    
+    wire [31:0] pc;  
+    wire        inst_SB;
     assign {inst_jbr,
             mem_control,
             store_data,
@@ -131,7 +136,8 @@ module mem(
             pc,
             ls_bytes_L,
             ls_bytes_R,
-            rf_wbytes         } = EXE_MEM_bus_r;  
+            rf_wbytes,
+            inst_SB         } = EXE_MEM_bus_r;  
 
     wire inst_load_t;  
      
@@ -145,16 +151,18 @@ module mem(
     assign MEM_load = inst_load_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte)) & MEM_valid;
     assign inst_store = inst_store_t & ((ls_word & data_addr[1:0] == 2'b0) | (ls_dbyte & data_addr[0] == 1'b0) | (~ls_word & ~ls_dbyte) | (ls_dbyte & (ls_bytes_L | ls_bytes_R)));
  
-    assign dcache_wen = ls_word & ((data_req & data_wr) | (data_req & ~data_wr & data_data_ok));
+    assign dcache_wen = ls_word & ~ls_dbyte & ~inst_SB & ((data_req & data_wr) | (data_req & ~data_wr & data_data_ok));
     assign data_req_t = (!MEM_valid)                 ?    1'b0    :
-                      (!MEM_load && !inst_store)   ?    1'b0    :
-                      data_req_;
-    assign data_in_cache = ls_word ? (data_in_cache_t) : 1'b0;//cache is valid only if load word rather than byte
+                        (!MEM_load && !inst_store)   ?    1'b0    :
+                        data_req_;
+    assign data_in_cache = (ls_word & ~ls_dbyte & ~inst_SB & MEM_valid) ? (data_in_cache_t) : 1'b0;//cache is valid only if load word rather than byte
     assign data_req = ~data_req_t ? 1'b0 : 
                       data_wr ? 1'b1 : 
                       data_in_cache ? 1'b0 : 
                       1'b1;
     assign dcache_wdata = data_wr ? data_wdata : data_rdata;
+    assign dcache_clear = (inst_SB | ls_dbyte) & data_req_t & data_wr;
+    assign dcache_waddr = {data_addr[31:2], 2'b0};
  
     always @ (*)    
     begin

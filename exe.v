@@ -3,10 +3,10 @@
 
 module exe(                         
     input              EXE_valid,   
-    input      [177:0] ID_EXE_bus_r,
+    input      [178:0] ID_EXE_bus_r,
     output             EXE_over,    
-    output     [165:0] EXE_MEM_bus,
-    output     [176:0] ID_EXE_bus_before, 
+    output     [166:0] EXE_MEM_bus,
+    output     [177:0] ID_EXE_bus_before, 
     output             stop_1_clock,
     
 
@@ -75,6 +75,7 @@ module exe(
     wire       stop_1_clock_before;
     //pc
     wire [31:0] pc;
+    wire        inst_SB;
     assign {inst_jbr,
             multiply,
             divide,
@@ -101,8 +102,9 @@ module exe(
             pc,
             ls_bytes_L,
             ls_bytes_R,
+            inst_SB,
             stop_1_clock_before         } = ID_EXE_bus_r;
-    assign ID_EXE_bus_before = ID_EXE_bus_r[176:0];
+    assign ID_EXE_bus_before = ID_EXE_bus_r[177:0];
     assign EXE_multiply = multiply & EXE_valid;
     
     
@@ -282,7 +284,7 @@ module exe(
                           mfhi,mflo,                      
                           mtc0,mfc0,cp0r_addr,syscall,break,ov_ex,ri_ex,eret,
                           EXE_wen,rf_wdest,                
-                          pc, ls_bytes_L, ls_bytes_R, rf_wbytes};                             //PC
+                          pc, ls_bytes_L, ls_bytes_R, rf_wbytes, inst_SB};                             //PC
 //-----{EXE->MEM??}end
 
 

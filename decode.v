@@ -11,7 +11,7 @@ module decode(
     output     [  4:0] rt,          
     output     [ 32:0] jbr_bus,     
     output             ID_over, 
-    output     [177:0] ID_EXE_bus,  
+    output     [178:0] ID_EXE_bus,  
     input              inst_addr_ok ,
 
     input              IF_over,     
@@ -382,7 +382,7 @@ module decode(
     wire [4:0] mem_control;  //MEM
     wire [31:0] store_data;  //store
     assign l_unsign = inst_LBU | inst_LHU;
-    assign ls_dbyte = inst_LH | inst_LHU | inst_LH | inst_SH | inst_SWL | inst_SWR;
+    assign ls_dbyte = inst_LH | inst_LHU | inst_LH | inst_SH |inst_SWL | inst_SWR;
     assign ls_word = inst_LW | inst_SW | inst_LWL | inst_LWR;
     assign mem_control = {inst_load,
                           inst_store,
@@ -430,7 +430,7 @@ module decode(
                          mfhi,mflo,                           
                          mtc0,mfc0,cp0r_addr,syscall,break,add_sub,ri_ex,eret,    
                          rf_wen, rf_wdest,                    
-                         pc, ls_bytes_L, ls_bytes_R, {1'b0}};                               
+                         pc, ls_bytes_L, ls_bytes_R, inst_SB, {1'b0}};                               
 //-----{ID->EXE}end
 
 endmodule

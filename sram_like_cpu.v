@@ -154,15 +154,15 @@ module sram_like_cpu(
     
 
     wire [ 63:0] IF_ID_bus;   // IF->ID
-    wire [177:0] ID_EXE_bus;  // ID->EXE
-    wire [165:0] EXE_MEM_bus; // EXE->MEM
+    wire [178:0] ID_EXE_bus;  // ID->EXE
+    wire [166:0] EXE_MEM_bus; // EXE->MEM
     wire [160:0] MEM_WB_bus;  // MEM->WB
     
     wire [176:0] ID_EXE_bus_before;
     
     reg [ 63:0] IF_ID_bus_r;
-    reg [177:0] ID_EXE_bus_r;
-    reg [165:0] EXE_MEM_bus_r;
+    reg [178:0] ID_EXE_bus_r;
+    reg [166:0] EXE_MEM_bus_r;
     reg [160:0] MEM_WB_bus_r;
     
     
