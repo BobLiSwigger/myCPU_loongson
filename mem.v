@@ -57,11 +57,11 @@ module mem(
     wire [31:0] dcache_rdata;
     wire [31:0] dcache_wdata;
     wire dcache_clear;
-    wire [31:0] dcache_waddr;
+    wire [29:0] dcache_waddr;
     dcache dcache_module(
         clk,
-        resetn,
-        {data_addr[31:2], 2'b0},
+        (resetn | cancel),
+        {data_addr[31:2]},
         dcache_clear,
         dcache_wen,
         dcache_waddr,
@@ -162,7 +162,7 @@ module mem(
                       1'b1;
     assign dcache_wdata = data_wr ? data_wdata : data_rdata;
     assign dcache_clear = (inst_SB | ls_dbyte) & data_req_t & data_wr;
-    assign dcache_waddr = {data_addr[31:2], 2'b0};
+    assign dcache_waddr = {data_addr[31:2]};
  
     always @ (*)    
     begin

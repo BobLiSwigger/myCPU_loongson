@@ -210,8 +210,7 @@ module decode(
     wire inst_sll, inst_srl, inst_sra,inst_lui;
     assign inst_add = inst_ADDU | inst_ADDIU | inst_load
                     | inst_store | inst_j_link | inst_ADD
-                    | inst_ADDI | inst_LWL | inst_LWR 
-                    | inst_SWL | inst_SWR;
+                    | inst_ADDI;
     assign inst_sub = inst_SUBU | inst_SUB;               
     assign inst_slt = inst_SLT | inst_SLTI;                
     assign inst_sltu= inst_SLTIU | inst_SLTU;             
